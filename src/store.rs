@@ -6,6 +6,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 
+use crate::GLOBAL_STORE;
 use serde_json::Value;
 
 pub trait Store {
@@ -87,7 +88,10 @@ impl Store for MemoryTiddlersStore {
             self.revision += 1;
         }
         let res = self.tiddlers.remove(key).is_some();
-        serde_json::to_writer(&File::create("./data.json").unwrap(), &self).unwrap();
+        actix_rt::spawn(async {
+            let store = GLOBAL_STORE.read().unwrap();
+            serde_json::to_writer(&File::create("./data.json").unwrap(), &*store).unwrap();
+        });
         res
     }
 
@@ -112,7 +116,10 @@ impl Store for MemoryTiddlersStore {
             );
             rev = 0
         }
-        serde_json::to_writer(&File::create("./data.json").unwrap(), &self).unwrap();
+        actix_rt::spawn(async {
+            let store = GLOBAL_STORE.read().unwrap();
+            serde_json::to_writer(&File::create("./data.json").unwrap(), &*store).unwrap();
+        });
         rev
     }
 
