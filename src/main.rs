@@ -2,7 +2,7 @@ mod gist;
 mod store;
 mod util;
 
-use crate::gist::backup_to_gist;
+use crate::gist::{backup_to_gist, pull_from_gist};
 use crate::store::{MemoryTiddlersStore, Store};
 use crate::util::compare_etag_and_response;
 use actix_files::NamedFile;
@@ -171,11 +171,22 @@ async fn main() -> std::io::Result<()> {
     actix_rt::spawn(async move {
         let mut last_reversion: u64;
         let mut cur_reversion: u64;
-        let mut interval = time::interval(Duration::from_secs(10));
         {
-            let store = GLOBAL_STORE.read().unwrap();
-            last_reversion = (*store).global_revision_num();
+            info!("try pull from gist");
+            let wiki_data = pull_from_gist().await;
+            if let Some(wiki_data) = wiki_data {
+                let mut store = GLOBAL_STORE.write().unwrap();
+                if (*store).global_revision_num() < wiki_data.global_revision_num() {
+                    (*store) = wiki_data;
+                    info!("pull from gist done!");
+                }
+                last_reversion = (*store).global_revision_num();
+            } else {
+                let store = GLOBAL_STORE.read().unwrap();
+                last_reversion = (*store).global_revision_num();
+            }
         }
+        let mut interval = time::interval(Duration::from_secs(10));
         loop {
             interval.tick().await;
             {
