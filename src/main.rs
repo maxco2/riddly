@@ -26,10 +26,10 @@ use std::time::Duration;
 
 lazy_static! {
     static ref GLOBAL_STORE: RwLock<MemoryTiddlersStore> = RwLock::new(MemoryTiddlersStore::new());
-    static ref GITHUB_GIST_TOKEN: String = env::var("GITHUB_GIST_TOKEN").unwrap();
-    static ref GITHUB_GIST_ID: String = env::var("GITHUB_GIST_ID").unwrap();
-    static ref WIKI_USER_NAME: String = env::var("WIKI_USER_NAME").unwrap();
-    static ref WIKI_USER_PASSWORD: String = env::var("WIKI_USER_PASSWORD").unwrap();
+    static ref GITHUB_GIST_TOKEN: String = env::var("GITHUB_GIST_TOKEN").unwrap_or("test".into());
+    static ref GITHUB_GIST_ID: String = env::var("GITHUB_GIST_ID").unwrap_or("test".into());
+    static ref WIKI_USER_NAME: String = env::var("WIKI_USER_NAME").unwrap_or("test".into());
+    static ref WIKI_USER_PASSWORD: String = env::var("WIKI_USER_PASSWORD").unwrap_or("test".into());
 }
 
 #[get("/favicon.ico")]
