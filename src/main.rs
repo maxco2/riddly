@@ -1,4 +1,5 @@
 mod gist;
+mod heroku_redict_https;
 mod store;
 mod util;
 
@@ -211,9 +212,11 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(|| {
         App::new()
-            .wrap(middleware::Compress::default())
+            // wrap priority
             .wrap(middleware::Logger::default())
+            .wrap(middleware::Compress::default())
             .wrap(HttpAuthentication::basic(ok_validator))
+            .wrap(heroku_redict_https::RedirectHTTPS::default()) //first
             .service(index)
             .service(status)
             .service(favicon)
